@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 from sqlalchemy import and_
 from app.api import api
@@ -6,95 +7,147 @@ from app.api import api
 from flask import make_response, request
 from flask_restx import Resource
 from app import db
-from app.database.models import Comix, ComixPages
-from app.api.api_models import comix_page_model, comix_page_model_full
+from app.database.models import Autor, Comix, ComixPages
+from app.api.api_models import comix_page_model, comix_page_model_full, autor_model, comix_model, \
+    error_message_model
 
+autor_ns = api.namespace('autor', description='autor crud')
 comix_ns = api.namespace('comix', description='comix crud')
 comix_pages_ns = api.namespace('comix_page', description='comix pages crud')
 
+@autor_ns.route('/')
+class AutorCRUD(Resource):
+    @api.response(200, 'OK')
+    def get(self):
+        try:
+            autors = Autor.query.all()
+            if not autors:
+                return make_response(json.dumps({'error': 'autors not exist'}), 404, 
+                                                {'Content-Type': 'application/'})
+            result = [{
+                    'id': autor.id, 
+                    'first_name': autor.first_name,
+                    } for autor in autors]
+
+            response =  make_response(json.dumps({'data': result}), 200, {'Content-Type': 'application/json'})
+        except Exception as e:
+            response = make_response(json.dumps({'error': getattr(e, 'message', str(e))}), 500, 
+                                                {'Content-Type': 'application/'})
+
+        return response
+
+
+    @api.response(200, 'OK')
+    @api.doc(body=autor_model)
+    def post(self):
+        body = request.get_json()
+        try:
+            autor = Autor(first_name=body['first_name'], last_name=body['last_name'])
+            db.session.add(autor)
+            db.session.commit()
+
+            response_data = {
+                'id': autor.id,
+                'first_name': autor.first_name,
+                'last_name': autor.last_name,
+
+            }
+            response =  make_response(json.dumps({'created': response_data}), 200, {'Content-Type': 'application/json'})
+        except Exception as e:
+            response = make_response(json.dumps({'error': getattr(e, 'message', str(e))}), 500, 
+                                                {'Content-Type': 'application/'})
+
+        return response
+
+
 @comix_ns.route('/')
+@api.response(500, "Error", error_message_model)
 class ComixCRUD(Resource):
 
     @api.response(200, 'OK')
     def get(self):
-        comix = Comix.query.first()
-        print('comix', comix)
-        return comix.id
+        try:
+            comixes = Comix.query.all()
+            result = [{
+                    'id': comix.id, 
+                    'first_name': comix.first_name,
+                    } for comix in comixes]
+
+            response =  make_response(json.dumps({'data': result}), 200, {'Content-Type': 'application/json'})
+        except Exception as e:
+            response = make_response(json.dumps({'error': getattr(e, 'message', str(e))}), 500, 
+                                                {'Content-Type': 'application/'})
+
+        return response
 
     @api.response(200, 'OK')
+    @api.doc(body=comix_model)
     def post(self):
-        comix = Comix(datetime=datetime.now(), description='desc_hi', autor='autor test')
-        db.session.add(comix)
-        db.session.commit()
+        body = request.get_json()
+        try:
+            
+            comix = Comix(description=body['description'], autor_id=body['autor_id'])
+            if not comix:
+                return make_response(json.dumps({'error': 'comix not created'}))
+            db.session.add(comix)
+            db.session.commit()
+            
+            response_data = {
+                'autor': comix.autor_id,
+                'datetime': str(comix.datetime),
+                'description': comix.description,
+            }
+            response =  make_response(json.dumps({'created': response_data}), 200, {'Content-Type': 'application/json'})
+        except Exception as e:
+            response = make_response(json.dumps({'error': getattr(e, 'message', str(e))}), 500, 
+                                                {'Content-Type': 'application/'})
 
-        response_data = {
-            'autor': comix.autor,
-            'datetime': comix.datetime,
+        return response
 
+
+@comix_pages_ns.route('/<int:comix_id>')
+class ComixCRUDId(Resource):
+
+    @api.response(200, 'OK')
+    def get(self, comix_id):
+        comix_pages = ComixPages.query.filter(ComixPages.comix_id==comix_id).first()
+        if not comix_pages:
+                return make_response(json.dumps({'error': 'comix pages not found'}), 404, 
+                                                {'Content-Type': 'application/'})
+        response = {
+            'id': comix_pages.id,
+            'description': comix_pages.description,
+            'elements': comix_pages.elements,
+            'comix_id': comix_pages.comix_id,
         }
+        return make_response({'created': response}, 200, {'Content-Type': 'application/json'})
 
-        return make_response({'created': response_data}, 200, {'Content-Type': 'application/json'})
 
 @comix_pages_ns.route('/')
 class ComixCRUD(Resource):
-
-    @api.response(200, 'OK')
-    def get(self):
-        # comix_page = ComixPages.query.order_by(ComixPages.id.desc()).first()
-        first = 1
-        last = 3
-        comix_pages = ComixPages.query.filter(and_(
-            ComixPages.id >= first,
-            ComixPages.id <= last
-        )).all()
-        print('comix_pages', comix_pages)
-
-        test = {
-            '1':{
-                'element_1': {
-                    'type': 'text',
-                    'coordinates': '192.168',
-                    'params': {
-                        'width': 30,
-                        'heigh': 80,
-                    },
-                    'data': 'hi, how are you?'
-                },
-                'element_2': {
-                    'type': 'text',
-                    'coordinates': '152.100',
-                    'params': {
-                        'width': 30,
-                        'heigh': 80,
-                    },
-                    'data': 'uuid  of img'
-                },
-            }
-        }
-
-
-        res = [{i.id: i.description} for i in comix_pages]
-        response_data = res
-        return make_response({'created': response_data}, 200, {'Content-Type': 'application/json'})
-
     @api.response(200, 'OK', comix_page_model_full)
     @api.doc(body=comix_page_model)
     @api.expect(body=comix_page_model)
     def post(self):
+        body = request.get_json()
+        try:
+            
+            comix_page = ComixPages(description=body['description'], 
+                                    elements=body['elements'], 
+                                    comix_id=body['comix_id']
+                                    )
+            db.session.add(comix_page)
+            db.session.commit()
 
-        data = request.get_json()
-        desc = data['description']
-        els = data['elements']
+            response_data = {
+                'id': comix_page.id,
+                'description': comix_page.description,
+                'elements': comix_page.elements,
+            }
 
-        comix_page = ComixPages(description=desc, elements=els)
-        db.session.add(comix_page)
-        db.session.commit()
+            response =  make_response(json.dumps({'created': response_data}), 200, {'Content-Type': 'application/json'})
+        except Exception as e:
+            response = make_response(json.dumps({'error': getattr(e, 'message', str(e))}), 500, 
+                                                {'Content-Type': 'application/'})
 
-        response_data = {
-            'id': comix_page.id,
-            'description': comix_page.description,
-            'elements': comix_page.elements,
-
-        }
-
-        return make_response({'created': response_data}, 200, {'Content-Type': 'application/json'})
+        return response

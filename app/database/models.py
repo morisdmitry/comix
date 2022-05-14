@@ -5,12 +5,10 @@ from sqlalchemy import ForeignKey
 from app import db
 
 
-
 class Autor(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     first_name = db.Column(db.String(120), unique=False, nullable=False)
     last_name = db.Column(db.String(120), unique=False, nullable=False)
-
 
 
 class Comix(db.Model):
