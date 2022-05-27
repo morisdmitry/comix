@@ -18,7 +18,7 @@ class Comix(db.Model):
     autor_id = db.Column(db.Integer, ForeignKey("autor.id"), nullable=False)
 
     def __repr__(self):
-        return '<Comix %r>' % self.id
+        return "<Comix %r>" % self.id
 
 
 class ComixPages(db.Model):
@@ -27,6 +27,5 @@ class ComixPages(db.Model):
     elements = db.Column(db.JSON, default=None, nullable=True)
     comix_id = db.Column(db.Integer, ForeignKey("comix.id"), nullable=False)
 
-
     def __repr__(self):
-        return '<ComixPage %r>' % self.id
+        return "<ComixPage %r>" % self.id
