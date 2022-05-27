@@ -5,7 +5,6 @@
 .vscode
 
 comix_frontend/
-config.py
 ### Flask ###
 instance/*
 
