@@ -15,7 +15,7 @@ after clone repo:
 
 ## go into database
 
-`docker-compose exec postgres psql -U postgres -d comix_test`
+`docker-compose exec postgres psql -U user -d database`
 
 # run flask app
 
