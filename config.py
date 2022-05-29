@@ -2,6 +2,7 @@ import os
 
 
 class Config:
+    IMG_DIR = os.environ.get("IMG_DIR")
     NAME_DB = os.environ.get("DB_NAME")
     USER = os.environ.get("DB_USER")
     PASSWORD = os.environ.get("PASSWORD")

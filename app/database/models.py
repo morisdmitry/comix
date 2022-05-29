@@ -23,7 +23,6 @@ class Comix(db.Model):
 
 class ComixPages(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    description = db.Column(db.String(120), unique=False, nullable=True)
     elements = db.Column(db.JSON, default=None, nullable=True)
     comix_id = db.Column(db.Integer, ForeignKey("comix.id"), nullable=False)
 
