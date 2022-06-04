@@ -2,6 +2,9 @@ import os
 
 
 class Config:
+    ENV = "development"
+    DEBUG = True
+    SECRET_KEY = os.environ.get("SK")
     IMG_DIR = os.environ.get("IMG_DIR")
     NAME_DB = os.environ.get("DB_NAME")
     USER = os.environ.get("DB_USER")

@@ -3,10 +3,12 @@ from flask import Flask
 from app.database import db
 from config import Config
 from flask_migrate import Migrate
+from flask_cors import CORS
 
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
     app.config.from_object(Config)
     app.app_context().push()
     db.init_app(app)
