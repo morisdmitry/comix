@@ -42,7 +42,7 @@ comix_page_model = api.model(
     "ComixPageModel",
     {
         "comix_id": fields.Integer(required=False, example=1),
-        "elements": fields.Nested(comix_elements_model),
+        "elements": fields.List(fields.Nested(comix_elements_model)),
     },
 )
 
@@ -51,7 +51,7 @@ comix_page_model_full = api.model(
     {
         "id": fields.Integer(required=True, example=1),
         "description": fields.String(required=False, example="text of description"),
-        "elements": fields.Nested(comix_elements_model),
+        "elements": fields.List(fields.Nested(comix_elements_model)),
     },
 )
 

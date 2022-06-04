@@ -133,19 +133,18 @@ class ComixPageCRUDId(Resource):
     @api.response(200, "OK")
     def get(self, comix_id):
         try:
-            comix_pages = ComixPages.query.filter(
-                ComixPages.comix_id == comix_id
-            ).first()
+            comix_pages = ComixPages.query.filter(ComixPages.comix_id == comix_id).all()
             if not comix_pages:
                 return make_response(response_error("comix pages not found", 404))
-            result = {
-                "comix page": {
-                    "id": comix_pages.id,
-                    "params": comix_pages.params,
-                    "elements": comix_pages.elements,
-                    "comix_id": comix_pages.comix_id,
+
+            result = [
+                {
+                    "id": page.id,
+                    "elements": page.elements,
+                    "comix_id": page.comix_id,
                 }
-            }
+                for page in comix_pages
+            ]
 
             response = make_response(response_ok(result, 200))
         except Exception as e:
